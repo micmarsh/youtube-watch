@@ -67,12 +67,15 @@ function onYouTubeIframeAPIReady () {
             'onReady': function () {},
             'onStateChange': function (e) {
                 //todo: decomplect this!
-                if (e.data === 1) {
-                    conn.send({type: 'play'});
+                if (window.conn) {
+                    if (e.data === 1) {
+                        conn.send({type: 'play'});
+                    }
+                    if (e.data === 2) {
+                        conn.send({type: 'pause'});
+                    }
                 }
-                if (e.data === 2) {
-                    conn.send({type: 'pause'});
-                }
+
             }
         }});
 
@@ -87,7 +90,7 @@ function onYouTubeIframeAPIReady () {
                 var newSeekTime = player.getCurrentTime();
                 // 2 is completely arbitrary, just giving a "safe"
                 // buffer"
-                if (Math.abs(newSeekTime - lastSeekTime) * 1000 > (seekCheckMs * 2)) {
+                if (window.conn && Math.abs(newSeekTime - lastSeekTime) * 1000 > (seekCheckMs * 2)) {
                     conn.send({type: 'seek', value: newSeekTime});
                 }
                 lastSeekTime = newSeekTime;
