@@ -15,8 +15,16 @@ const eventPromise = (eventName) => (emitter) =>
             emitter.on('error', reject);
         })
 
+const promiseAfter = (ms) => (action) => (input) =>
+      new Promise(
+          (res, rej) =>
+              setTimeout(() => action(input).then(res, rej) , ms)
+      )
+
+const delay = promiseAfter(2000);
+
 // warning: is javascript-y overload
-const createNewPeer = (peerId) => {
+const createNewPeer = delay ((peerId) => {
     const [received, messages] = adapter.createAdapter();
     const peer = new Peer(peerId);
 
@@ -34,9 +42,9 @@ const createNewPeer = (peerId) => {
                 send: x => conn.send(x)
             };            
         });
-}
+})
 
-const connectToHost = ({peerId, hostId}) => {
+const connectToHost = delay (({peerId, hostId}) => {
     const [received, messages] = adapter.createAdapter();
     const peer = new Peer(peerId);
 
@@ -44,7 +52,7 @@ const connectToHost = ({peerId, hostId}) => {
 
     const conn = peer.connect(hostId);
     setupConnection(received, conn);
-    const onOpen = eventPromise('open') (conn);
+    const onOpen = Promise.resolve("yes");//eventPromise('open') (conn);
     
     return Promise.all([onPeerId, onOpen])
         .then(([peerId, _]) => {
@@ -54,7 +62,7 @@ const connectToHost = ({peerId, hostId}) => {
                 send: x => conn.send(x)
             };
         });
-}
+});
 
 exports.createNewPeer = createNewPeer;
 exports.connectToHost = connectToHost;

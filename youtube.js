@@ -50,7 +50,7 @@ const createPlayer = (domId, videoId) => {
             (function createPlayer () {
                 setTimeout(
                     () => {
-                        if (Boolean(YT)) {                                  
+                        if (Boolean(YT) && Boolean(YT.Player)) {                                  
                             var player = new YT.Player(domId, {
                                 videoId,
                                 events: {

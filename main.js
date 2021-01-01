@@ -16,14 +16,21 @@ const peer = hostId ? pr.connectToHost({hostId, peerId}) : pr.createNewPeer(peer
 
 peer.then(data => localStorage['myPeerId'] = data.peerId);
 
+const scheduler_ = scheduler.newDefaultScheduler();
+const start = s => most.runEffects(s, scheduler_);
+
+peer.then(peer => {
+    start(most.tap(console.log, peer.messages));
+    window.peer = peer;
+    console.log("woohoo");
+})
+
 Promise.all([player, peer])
     .then(([player, peer]) => {
         const sendEvents = most.tap(peer.send, player.events);
         const receiveEvents = most.tap(player.trigger, peer.messages);
 
-        const scheduler_ = scheduler.newDefaultScheduler();
-        const start = s => most.runEvents(s, scheduler_);
-
+        console.log('yes');
         start(sendEvents);
         start(receiveEvents);
     }, console.error);
