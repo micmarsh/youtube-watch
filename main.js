@@ -26,7 +26,7 @@ Promise.all([player, peer])
 
         start(sendEvents);
         start(receiveEvents);
-    })
+    }, console.error);
 
 window.yt = yt;
 window.pr = pr;

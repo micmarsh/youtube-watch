@@ -26,7 +26,7 @@ const createNewPeer = (peerId) => {
     return Promise.all([onConnection, onPeerId])
         .then((result) => {
             const [conn, peerId] = result;
-            setConnection(received, conn);
+            setupConnection(received, conn);
             return {
                 messages,
                 peerId,
