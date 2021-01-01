@@ -52,7 +52,7 @@ const connectToHost = delay (({peerId, hostId}) => {
 
     const conn = peer.connect(hostId);
     setupConnection(received, conn);
-    const onOpen = Promise.resolve("yes");//eventPromise('open') (conn);
+    const onOpen = eventPromise('open') (conn);
     
     return Promise.all([onPeerId, onOpen])
         .then(([peerId, _]) => {
