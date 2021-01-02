@@ -42,40 +42,46 @@ const setupSeekEvents = (player, induce) => {
     }, seekCheckMs);
 }
 
+const ytApiReady = new Promise(
+    (res, rej) =>
+        (function checkReady () {
+            setTimeout(
+                () => {
+                    if (Boolean(YT) && Boolean(YT.Player)) {
+                        res(YT);
+                    } else {
+                        checkReady();
+                    }
+                }
+                , 100);
+        })()
+);
+
 const createPlayer = (domId, videoId) => {
     const [induce, events] = adapter.createAdapter();
-    
-    return new Promise(
-        (resolve, reject) =>
-            (function createPlayer () {
-                setTimeout(
-                    () => {
-                        if (Boolean(YT) && Boolean(YT.Player)) {                                  
-                            var player = new YT.Player(domId, {
-                                videoId,
-                                events: {
-                                    'onReady': () => {},
-                                    'onStateChange': (e) => {
-                                        if (e.data === 1) {
-                                            induce({type: 'play'});
-                                        }
-                                        if (e.data === 2) {
-                                            induce({type: 'pause'});
-                                        }
-                                    }
-                                }});
-                            setupSeekEvents(player, induce);
-                            resolve({
-                                events,
-                                trigger: eventHandler(player),
-                                _player: player
-                            });
-                        } else {
-                            createPlayer();
+
+    return ytApiReady
+        .then(({Player}) => {
+            const player = new Player(domId, {
+                videoId,
+                events: {
+                    'onReady': () => {},
+                    'onStateChange': (e) => {
+                        if (e.data === 1) {
+                            induce({type: 'play'});
+                        }
+                        if (e.data === 2) {
+                            induce({type: 'pause'});
                         }
                     }
-                    , 100);
-            })());
+                }});
+            setupSeekEvents(player, induce);
+            return {
+                events,
+                trigger: eventHandler(player),
+                _player: player
+            };
+        });
 }
 
 exports.createPlayer = createPlayer;
