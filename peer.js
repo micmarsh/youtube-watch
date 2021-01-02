@@ -21,17 +21,14 @@ const createNewPeer = (peerId) => {
     const peer = new Peer(peerId);
     
     return eventPromise('open') (peer)
-        .then(peerId =>
-              eventPromise('connection') (peer)
-              .then(c => [peerId, c]))
-        .then(([peerId, conn]) => {
-            setupConnection (received, conn);
-            return {
-                messages,
-                peerId,
-                // some dumb "this" business breaking
-                send: x => conn.send(x)
-            };    
+        .then(peerId => {
+              const connP = eventPromise('connection') (peer);
+              connP.then(conn => setupConnection (received, conn));
+              return {
+                  messages,
+                  peerId,
+                  send: x => connP.then(conn => conn.send(x))
+              };    
         });
 }
 
@@ -40,17 +37,14 @@ const connectToHost = ({peerId, hostId}) => {
     const peer = new Peer(peerId);
 
     return eventPromise('open') (peer)
-        .then (peerId => {
+        .then(peerId => {
             const conn = peer.connect(hostId);
             setupConnection(received, conn);
-            return eventPromise('open') (conn)
-                .then(_ => [peerId, conn]);
-        })
-        .then(([peerId, conn]) => {
+            const openP = eventPromise('open') (conn);
             return {
                 messages,
                 peerId,
-                send: x => conn.send(x)
+                send: x => openP.then(() => conn.send(x))
             };
         });
 };
